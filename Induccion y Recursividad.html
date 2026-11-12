@@ -1,0 +1,724 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Inducción y Recursividad</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Concepto: hoja de cuaderno cuadriculado (matemáticas discretas) con paneles tipo ficha de estudio.
+   Un tema a la vez, con navegación numerada 1-10 y una demo interactiva por tema. */
+:root{
+  --bg:#EDF3F5; --surface:#FFFFFF; --surface2:#F4F8F9; --fg:#10222A; --muted:#4E656F;
+  --line:#C6D6DB; --grid:rgba(16,34,42,.06);
+  --accent:#607a9e; --accent-ink:#FFFFFF; --accent-soft:#D8EFED;
+  --warm:#B05F00; --warm-soft:#FBEBD2; --bad:#B83A2E; --bad-soft:#F8DEDA;
+  --f-display:'Space Grotesk',system-ui,sans-serif;
+  --f-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D171C; --surface:#14232A; --surface2:#1A2D35; --fg:#E5EEF1; --muted:#9BB0B8;
+    --line:#2B414B; --grid:rgba(229,238,241,.05);
+    --accent:#3DC4BA; --accent-ink:#052321; --accent-soft:#16413F;
+    --warm:#F0B24A; --warm-soft:#3A2E16; --bad:#FF8A7A; --bad-soft:#4A2420;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D171C; --surface:#14232A; --surface2:#1A2D35; --fg:#E5EEF1; --muted:#9BB0B8;
+  --line:#2B414B; --grid:rgba(229,238,241,.05);
+  --accent:#3DC4BA; --accent-ink:#052321; --accent-soft:#16413F;
+  --warm:#F0B24A; --warm-soft:#3A2E16; --bad:#FF8A7A; --bad-soft:#4A2420;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:var(--f-body); font-size:16px; line-height:1.55;
+  background-color:var(--bg); color:var(--fg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+  padding-block:20px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:1080px;margin-inline:auto}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance}
+p{margin:0}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* Encabezado */
+.ficha{display:flex;flex-wrap:wrap;gap:12px 28px;padding-bottom:14px;border-bottom:3px solid var(--accent)}
+.ficha div{display:flex;flex-direction:column;min-width:0}
+.ficha small{font:600 .72rem var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.ficha b{font-family:var(--f-display);font-size:1.15rem;font-weight:600;overflow-wrap:anywhere}
+h1{font-size:clamp(2.1rem,6vw,3.6rem);line-height:1.04;letter-spacing:-.02em;margin:22px 0 10px;font-weight:700}
+.lead{color:var(--muted);max-width:62ch}
+
+/* Navegación */
+.tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin-block:22px}
+.tab{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);font:inherit;font-size:.88rem;text-align:left;cursor:pointer;min-width:0}
+.tab .n{font-family:var(--f-mono);font-weight:600;color:var(--accent)}
+.tab:hover{border-color:var(--accent)}
+.tab[aria-current="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tab[aria-current="true"] .n{color:var(--accent-ink)}
+
+/* Tema */
+.tema-head{margin-bottom:18px}
+.idx{font:600 .8rem var(--f-mono);color:var(--accent);letter-spacing:.06em}
+h2{font-size:clamp(1.8rem,4.4vw,2.7rem);line-height:1.1;margin:6px 0 4px;letter-spacing:-.015em}
+.sub{font-size:1.1rem;color:var(--muted)}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;margin-bottom:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;min-width:0;margin-bottom:16px}
+.grid3 .panel{margin-bottom:0}
+.panel h3{font:600 .78rem var(--f-display);text-transform:uppercase;letter-spacing:.11em;color:var(--accent);margin:0 0 12px}
+.panel.formula h3{color:var(--warm)}
+.panel.formula{background:var(--warm-soft);border-color:var(--warm)}
+.panel.concl{background:var(--accent-soft);border-color:var(--accent)}
+.panel.concl p{font-size:1.05rem}
+.def p{font-size:1.02rem}
+ul.car{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+ul.car li{position:relative;padding-left:22px}
+ul.car li::before{content:"";position:absolute;left:3px;top:.55em;width:8px;height:8px;background:var(--accent);transform:rotate(45deg)}
+.formula-box{font-family:var(--f-mono);font-size:.96rem;line-height:1.85;background:var(--surface);border:1px dashed var(--warm);border-radius:8px;padding:14px;white-space:pre-wrap;overflow-x:auto}
+.nota{margin-top:12px;font-size:.92rem;color:var(--muted)}
+.panel.formula .nota{color:var(--fg)}
+sub,sup{line-height:0}
+
+/* Ejemplo paso a paso */
+.enun{font-size:1.05rem;font-weight:500;margin-bottom:14px;padding:12px 14px;background:var(--surface2);border-left:4px solid var(--accent);border-radius:4px}
+.seg{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.seg button{font:inherit;font-size:.88rem;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+ol.steps{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:8px}
+.step{display:flex;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer;min-width:0}
+.step>div{min-width:0}
+.step .bullet{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:600 .85rem var(--f-mono);border:2px solid var(--line);color:var(--muted)}
+.step strong{font-family:var(--f-display);font-weight:600}
+.step p{margin-top:2px;overflow-wrap:anywhere}
+.step.past .bullet{border-color:var(--accent);color:var(--accent)}
+.step.active{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 4px 0 0 var(--accent)}
+.step.active .bullet{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+/* Controles */
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px}
+.btn{font:inherit;font-weight:600;font-size:.9rem;padding:9px 14px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.mono{font-family:var(--f-mono);font-size:.88rem;color:var(--muted)}
+.ctl{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-bottom:12px}
+.ctl label{font-weight:500}
+.ctl output{font-family:var(--f-mono);font-weight:600;color:var(--accent)}
+input[type=range]{accent-color:var(--accent);width:min(100%,320px)}
+input[type=number]{font:inherit;font-family:var(--f-mono);width:7rem;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg)}
+.checks{display:grid;gap:6px;margin-bottom:12px}
+.chk{display:flex;gap:8px;align-items:center}
+.chk input{accent-color:var(--accent);width:18px;height:18px}
+.status{margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:8px;min-height:3.2em}
+.demo-fields{display:flex;flex-wrap:wrap;gap:12px 22px;margin-bottom:12px}
+.demo-fields div{display:flex;flex-direction:column;gap:4px}
+.demo-fields label{font-size:.82rem;color:var(--muted)}
+
+/* Dominó */
+.dominos{display:flex;gap:16px;align-items:flex-end;height:110px;padding:14px 40px 8px 12px;border-bottom:4px solid var(--fg);overflow-x:auto}
+.fi{flex:none;width:16px;height:76px;border-radius:3px;background:var(--accent);transform-origin:bottom left;transition:transform .28s ease-in;position:relative;display:flex;align-items:flex-start;justify-content:center}
+.fi span{font:600 .62rem var(--f-mono);color:var(--accent-ink);margin-top:4px}
+.fi.down{transform:rotate(74deg);background:var(--warm)}
+
+/* Tablas, fichas, chips */
+.tablewrap{overflow-x:auto;margin-top:10px}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+thead th{font-family:var(--f-display);font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+td.num,th.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+tr.hl td,tr.hl th{background:var(--accent-soft)}
+.cmp tbody th{font-family:var(--f-display);color:var(--accent);white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-block:10px}
+.chip{font-family:var(--f-mono);font-variant-numeric:tabular-nums;padding:4px 9px;border-radius:6px;border:1px solid var(--line);background:var(--surface2)}
+.chip.hl{background:var(--accent-soft);border-color:var(--accent);font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:10px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--surface2);min-width:0}
+.stat span{display:block;font-size:.8rem;color:var(--muted)}
+.stat b{font:600 1.3rem var(--f-mono);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.okmark{color:var(--accent);font-weight:700}
+.badmark{color:var(--bad);font-weight:700}
+
+/* Pila de llamadas */
+.stack{display:grid;gap:6px;margin-top:12px}
+.frame{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);font-family:var(--f-mono);font-size:.88rem}
+.frame.done{background:var(--accent-soft);border-color:var(--accent)}
+.frame b{font-weight:600}
+
+/* Hanói */
+.pegs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;height:226px;margin-top:6px}
+.peg{position:relative;display:flex;flex-direction:column-reverse;align-items:center;padding-bottom:26px;border-bottom:4px solid var(--fg);min-width:0}
+.peg::before{content:"";position:absolute;left:calc(50% - 3px);top:6px;bottom:0;width:6px;border-radius:3px;background:var(--line)}
+.plabel{position:absolute;bottom:2px;left:0;right:0;text-align:center;font:600 .8rem var(--f-mono);color:var(--muted)}
+.disc{position:relative;z-index:1;height:22px;margin-top:2px;border-radius:6px;display:grid;place-items:center;font:600 .72rem var(--f-mono);color:var(--fg);border:1px solid var(--accent)}
+
+footer{margin-top:28px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+.foot{font-size:.85rem;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.fi{transition:none}}
+@media (max-width:480px){.panel{padding:16px}h1{margin-top:18px}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="ficha">
+      <div><small>Alumna</small><b>Maria Jocelyn Viera Aguilar</b></div>
+      <div><small>Materia</small><b>Matemáticas discretas</b></div>
+    </div>
+    <h1>Inducción y recursividad</h1>
+  </header>
+  <nav class="tabs" id="tabs" aria-label="Temas"></nav>
+  <main id="tema"></main>
+  <footer>
+    <span class="foot">Usa las flechas ← → del teclado para cambiar de tema.</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+var $ = function(s, r){ return (r||document).querySelector(s); };
+var timers = [];
+function clearTimers(){ timers.forEach(function(t){ clearTimeout(t); clearInterval(t); }); timers = []; }
+function later(fn, ms){ var id = setTimeout(fn, ms); timers.push(id); return id; }
+function clamp(v, a, b){ v = Number(v); if (isNaN(v)) v = a; return Math.max(a, Math.min(b, v)); }
+function fmt(x){ var r = Math.round(x*1e4)/1e4; return String(r).replace("-", "−"); }
+function big(x){ return x.toLocaleString("es-MX"); }
+
+/* ---------- Contenido ---------- */
+var TOPICS = [
+{
+ short:"Inducción", titulo:"Inducción matemática", sub:"Concepto y aplicación",
+ def:"La <strong>inducción matemática</strong> es un método de demostración que prueba que una afirmación P(n) es verdadera para <em>todos</em> los números naturales n ≥ n₀, sin revisar uno por uno los infinitos casos. Funciona como una fila de fichas de dominó: si la primera cae y cada ficha tumba a la siguiente, caen todas.",
+ car:["Se usa en enunciados que dependen de un número natural n: sumas, divisibilidad, desigualdades.","Tiene dos piezas obligatorias: el caso base y el paso inductivo.","No descubre fórmulas: confirma una que ya se conjeturó.","Se apoya en el principio del buen orden de los números naturales.","Si falta una de las dos piezas, la demostración no es válida."],
+ formula:"[ P(1) ∧ ∀k ≥ 1 ( P(k) → P(k+1) ) ]  ⇒  ∀n ≥ 1, P(n)",
+ nota:"Se lee: si P(1) es cierta y, para cualquier k, P(k) implica P(k+1), entonces P(n) es cierta para todo n ≥ 1.",
+ ejemplos:[{enunciado:"Demostrar que la suma de los primeros n impares es n²:  1 + 3 + 5 + … + (2n − 1) = n².",
+  pasos:[
+   ["Escribir P(n)","P(n): 1 + 3 + 5 + … + (2n − 1) = n²."],
+   ["Caso base (n = 1)","Lado izquierdo: 1. Lado derecho: 1² = 1. Son iguales, así que P(1) es verdadera."],
+   ["Hipótesis inductiva","Suponemos que P(k) es cierta para un k ≥ 1:  1 + 3 + … + (2k − 1) = k²."],
+   ["Paso inductivo","Queremos probar P(k+1):  1 + 3 + … + (2k − 1) + (2k + 1) = (k + 1)². Por la hipótesis, la suma hasta (2k − 1) vale k², así que el lado izquierdo queda  k² + (2k + 1)."],
+   ["Simplificar","k² + 2k + 1 = (k + 1)². Es justo el lado derecho de P(k+1)."],
+   ["Conclusión","Por inducción matemática, la suma de los primeros n impares es n² para todo n ≥ 1."]
+  ]}],
+ concl:"La inducción permite demostrar, con un número finito de pasos, propiedades que valen para infinitos números. Es la herramienta base para validar fórmulas de sumas, algoritmos y programas recursivos.",
+ demo:{tipo:"domino", toggles:false, titulo:"Derriba la fila de fichas"}
+},
+{
+ short:"Pasos", titulo:"Pasos de la inducción", sub:"Caso base e inductivo",
+ def:"Toda demostración por inducción sigue pasos fijos: primero se verifica el <strong>caso base</strong> (el primer valor), luego se supone la <strong>hipótesis inductiva</strong> P(k) y se demuestra el <strong>paso inductivo</strong>: que de P(k) se sigue P(k+1).",
+ car:["Caso base: se comprueba P(n₀) con el valor inicial, casi siempre n = 0 o n = 1.","Hipótesis inductiva: se supone que P(k) es verdadera para un k arbitrario.","Paso inductivo: usando la hipótesis, se demuestra P(k+1).","El paso inductivo debe valer para cualquier k ≥ n₀, no solo para un valor particular.","La conclusión se enuncia al final: P(n) vale para todo n ≥ n₀."],
+ formula:"1) Base:        P(n₀) es verdadera\n2) Hipótesis:   suponer P(k), con k ≥ n₀\n3) Paso:        probar P(k) → P(k+1)\n4) Conclusión:  ∀n ≥ n₀, P(n)",
+ nota:"En el paso 3 se usa la hipótesis para transformar el lado de P(k+1) hasta llegar a la forma deseada.",
+ ejemplos:[{enunciado:"Demostrar que la suma de los primeros n pares es n(n + 1):  2 + 4 + 6 + … + 2n = n(n + 1).",
+  pasos:[
+   ["Caso base (n = 1)","Izquierda: 2. Derecha: 1 · 2 = 2. P(1) es verdadera."],
+   ["Hipótesis inductiva","Suponemos que 2 + 4 + … + 2k = k(k + 1)."],
+   ["Qué hay que probar","P(k+1):  2 + 4 + … + 2k + 2(k + 1) = (k + 1)(k + 2)."],
+   ["Aplicar la hipótesis","Reemplazamos los primeros k términos por k(k + 1). El lado izquierdo queda  k(k + 1) + 2(k + 1)."],
+   ["Factorizar","k(k + 1) + 2(k + 1) = (k + 1)(k + 2). Coincide con lo que se quería probar."],
+   ["Conclusión","P(1) es verdadera y P(k) → P(k+1), entonces la fórmula vale para todo n ≥ 1."]
+  ]}],
+ concl:"Separar la demostración en base, hipótesis y paso da un esquema que se repite en cualquier problema. Evita errores comunes, como olvidar el caso base o probar el paso solo para un valor concreto de k.",
+ demo:{tipo:"domino", toggles:true, titulo:"Quita una pieza y mira qué pasa"}
+},
+{
+ short:"Demostraciones", titulo:"Demostraciones por inducción", sub:"Ejercicios resueltos",
+ def:"Una <strong>demostración por inducción</strong> es la aplicación completa del método: se plantea P(n), se verifica la base, se usa la hipótesis y se llega a P(k+1). Aquí se resuelven tres tipos frecuentes: sumas, divisibilidad y desigualdades.",
+ car:["Sumas: se agrega el término k + 1 a ambos lados de la hipótesis.","Divisibilidad: se escribe la hipótesis como un múltiplo (por ejemplo 4<sup>k</sup> − 1 = 3m).","Desigualdades: se acota la expresión de k + 1 usando la hipótesis.","El caso base puede empezar en un valor distinto de 1 (por ejemplo n ≥ 4).","Cada ejercicio termina con una conclusión escrita."],
+ formula:"Suma:           1 + 2 + … + n = n(n+1)/2\nDivisibilidad:  3 | (4<sup>n</sup> − 1)\nDesigualdad:    2<sup>n</sup> > n",
+ nota:"Tres plantillas: sumar el siguiente término, sustituir el múltiplo, o acotar con la hipótesis.",
+ ejemplos:[
+  {nom:"Suma", enunciado:"Demostrar que 1 + 2 + 3 + … + n = n(n + 1)/2, para todo n ≥ 1.",
+   pasos:[
+    ["Caso base (n = 1)","Izquierda: 1. Derecha: 1 · 2 / 2 = 1. Se cumple."],
+    ["Hipótesis inductiva","1 + 2 + … + k = k(k + 1)/2."],
+    ["Paso inductivo","Sumamos (k + 1) a ambos lados:  1 + 2 + … + k + (k + 1) = k(k + 1)/2 + (k + 1)."],
+    ["Simplificar","k(k + 1)/2 + (k + 1) = (k + 1)(k/2 + 1) = (k + 1)(k + 2)/2."],
+    ["Conclusión","Es exactamente P(k+1). Queda demostrado para todo n ≥ 1."]
+   ]},
+  {nom:"Divisibilidad", enunciado:"Demostrar que 4<sup>n</sup> − 1 es divisible entre 3, para todo n ≥ 1.",
+   pasos:[
+    ["Caso base (n = 1)","4¹ − 1 = 3, que es múltiplo de 3."],
+    ["Hipótesis inductiva","4<sup>k</sup> − 1 = 3m para algún entero m, es decir, 4<sup>k</sup> = 3m + 1."],
+    ["Paso inductivo","4<sup>k+1</sup> − 1 = 4 · 4<sup>k</sup> − 1 = 4(3m + 1) − 1."],
+    ["Simplificar","4(3m + 1) − 1 = 12m + 3 = 3(4m + 1), que es múltiplo de 3."],
+    ["Conclusión","4<sup>k+1</sup> − 1 también es divisible entre 3. Por inducción, vale para todo n ≥ 1."]
+   ]},
+  {nom:"Desigualdad", enunciado:"Demostrar que 2<sup>n</sup> > n, para todo n ≥ 1.",
+   pasos:[
+    ["Caso base (n = 1)","2¹ = 2 > 1. Se cumple."],
+    ["Hipótesis inductiva","2<sup>k</sup> > k."],
+    ["Paso inductivo","2<sup>k+1</sup> = 2 · 2<sup>k</sup> > 2k, por la hipótesis."],
+    ["Acotar","Como k ≥ 1, se tiene 2k = k + k ≥ k + 1. Entonces 2<sup>k+1</sup> > 2k ≥ k + 1."],
+    ["Conclusión","Se cumple P(k+1). Por inducción, 2<sup>n</sup> > n para todo n ≥ 1."]
+   ]}
+ ],
+ concl:"Resolver ejercicios variados muestra que el mismo esqueleto sirve para sumas, divisibilidad y desigualdades. Practicarlos desarrolla la habilidad de manejar la hipótesis inductiva, que es lo más difícil del método.",
+ demo:{tipo:"ejercicios", titulo:"Comprueba los casos con números"}
+},
+{
+ short:"Recursividad", titulo:"Recursividad", sub:"Concepto y funcionamiento",
+ def:"La <strong>recursividad</strong> es una forma de definir o resolver algo en términos de una versión más pequeña de sí mismo. Una función recursiva se llama a sí misma con un argumento menor hasta llegar a un caso que se resuelve directamente: el caso base.",
+ car:["Caso base: situación simple con respuesta directa, que detiene las llamadas.","Caso recursivo: la función se llama a sí misma con un problema más pequeño.","Cada llamada espera el resultado de la siguiente; las llamadas pendientes forman la pila.","Primero se desciende hasta el caso base y luego se regresa calculando los resultados.","Sin caso base, o sin acercarse a él, las llamadas no terminan (desbordamiento de pila)."],
+ formula:"f(n) = valor directo,        si n = n₀      (caso base)\nf(n) = g( f(n − 1), n ),     si n > n₀      (caso recursivo)",
+ nota:"g es la operación que combina el resultado del problema más pequeño con n.",
+ ejemplos:[{enunciado:"Definir la suma S(n) = 1 + 2 + … + n de forma recursiva, con S(1) = 1 y S(n) = S(n − 1) + n, y calcular S(4).",
+  pasos:[
+   ["Caso base","S(1) = 1."],
+   ["Caso recursivo","S(n) = S(n − 1) + n, para n > 1."],
+   ["Descender","S(4) = S(3) + 4,  S(3) = S(2) + 3,  S(2) = S(1) + 2. Llegamos al caso base."],
+   ["Detenerse en el caso base","S(1) = 1. Aquí terminan las llamadas."],
+   ["Regresar calculando","S(2) = 1 + 2 = 3.  S(3) = 3 + 3 = 6.  S(4) = 6 + 4 = 10."],
+   ["Verificar","Con la fórmula n(n + 1)/2:  4 · 5 / 2 = 10. Coincide."]
+  ]}],
+ concl:"La recursividad divide un problema grande en problemas más pequeños del mismo tipo, lo que da soluciones cortas y claras. Es la base de algoritmos como el recorrido de árboles, el ordenamiento rápido y el análisis de estructuras anidadas.",
+ demo:{tipo:"pila", cfg:"suma", titulo:"Mira la pila de llamadas"}
+},
+{
+ short:"Factorial", titulo:"Factorial recursivo", sub:"Desarrollo numérico",
+ def:"El <strong>factorial</strong> de un entero n ≥ 0, escrito n!, es el producto de los enteros positivos desde 1 hasta n. Se define de forma recursiva porque n! es n multiplicado por el factorial del número anterior.",
+ car:["Caso base: 0! = 1.","Caso recursivo: n! = n · (n − 1)! para n ≥ 1.","Se hacen n + 1 llamadas, una por cada valor desde n hasta 0.","Crece muy rápido: 10! = 3 628 800.","Cuenta las formas de ordenar n objetos distintos."],
+ formula:"0! = 1\nn! = n · (n − 1)!,   n ≥ 1",
+ nota:"También se cumple 1! = 1, que sale de 1 · 0!.",
+ ejemplos:[{enunciado:"Calcular 5! con la definición recursiva.",
+  pasos:[
+   ["Descender","5! = 5 · 4!,  4! = 4 · 3!,  3! = 3 · 2!,  2! = 2 · 1!,  1! = 1 · 0!."],
+   ["Caso base","0! = 1."],
+   ["Regresar (1)","1! = 1 · 0! = 1 · 1 = 1.  2! = 2 · 1! = 2 · 1 = 2."],
+   ["Regresar (2)","3! = 3 · 2! = 3 · 2 = 6.  4! = 4 · 3! = 4 · 6 = 24."],
+   ["Resultado","5! = 5 · 4! = 5 · 24 = 120."],
+   ["Verificar","Producto directo: 5 · 4 · 3 · 2 · 1 = 120. Coincide."]
+  ]}],
+ concl:"El factorial es el ejemplo clásico para aprender recursividad y se usa en permutaciones, combinaciones y probabilidad. Mostrar el desarrollo numérico deja claro cómo se acumulan las llamadas y cómo se resuelven al regresar.",
+ demo:{tipo:"pila", cfg:"fact", titulo:"Calcula n! y observa la pila"}
+},
+{
+ short:"Fibonacci", titulo:"Sucesión de Fibonacci", sub:"Regla y ejemplos",
+ def:"La <strong>sucesión de Fibonacci</strong> es una lista de números en la que cada término es la suma de los dos anteriores. Empieza con 0 y 1: 0, 1, 1, 2, 3, 5, 8, 13…",
+ car:["Necesita dos casos base: F(0) = 0 y F(1) = 1.","Cada término depende de los dos anteriores.","El cociente F(n) / F(n − 1) se acerca a la razón áurea φ ≈ 1.618.","La versión recursiva directa repite cálculos y se vuelve lenta para n grandes.","Aparece en la naturaleza: espirales de plantas, conchas y ramificaciones."],
+ formula:"F(0) = 0,   F(1) = 1\nF(n) = F(n − 1) + F(n − 2),   n ≥ 2",
+ nota:"Primeros términos: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55.",
+ ejemplos:[{enunciado:"Calcular F(6) a partir de los casos base.",
+  pasos:[
+   ["Casos base","F(0) = 0 y F(1) = 1."],
+   ["Calcular F(2)","F(2) = F(1) + F(0) = 1 + 0 = 1."],
+   ["Calcular F(3)","F(3) = F(2) + F(1) = 1 + 1 = 2."],
+   ["Calcular F(4)","F(4) = F(3) + F(2) = 2 + 1 = 3."],
+   ["Calcular F(5)","F(5) = F(4) + F(3) = 3 + 2 = 5."],
+   ["Calcular F(6)","F(6) = F(5) + F(4) = 5 + 3 = 8."],
+   ["Sucesión resultante","0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55…"]
+  ]}],
+ concl:"Fibonacci enseña cómo una regla simple genera una sucesión con propiedades muy ricas. También muestra por qué conviene analizar la eficiencia: la recursión directa repite trabajo y suele mejorarse guardando resultados.",
+ demo:{tipo:"fib", titulo:"Explora la sucesión"}
+},
+{
+ short:"Sucesiones", titulo:"Sucesiones recursivas", sub:"Términos y patrones",
+ def:"Una <strong>sucesión recursiva</strong> es una lista ordenada de números en la que, dados uno o más términos iniciales, cada término se obtiene de los anteriores con una regla fija. Al estudiar los primeros términos se puede descubrir un patrón y una fórmula directa.",
+ car:["Tiene término inicial (a₁) y una regla de recurrencia.","Aritmética: suma siempre la misma diferencia d.","Geométrica: multiplica siempre por la misma razón r.","Se puede buscar una fórmula cerrada para calcular a<sub>n</sub> sin los términos anteriores.","La fórmula propuesta se confirma con inducción."],
+ formula:"Aritmética:  a<sub>n</sub> = a<sub>n−1</sub> + d   ⇒   a<sub>n</sub> = a₁ + (n − 1)d\nGeométrica:  a<sub>n</sub> = r · a<sub>n−1</sub>   ⇒   a<sub>n</sub> = a₁ · r<sup>n−1</sup>",
+ nota:"La regla recursiva dice cómo pasar de un término al siguiente; la fórmula cerrada da directamente el término n.",
+ ejemplos:[{enunciado:"Dada a₁ = 2 y a<sub>n</sub> = 3a<sub>n−1</sub> − 2, hallar los primeros términos y el patrón.",
+  pasos:[
+   ["Término inicial","a₁ = 2."],
+   ["Segundo término","a₂ = 3 · 2 − 2 = 4."],
+   ["Más términos","a₃ = 3 · 4 − 2 = 10.  a₄ = 3 · 10 − 2 = 28.  a₅ = 3 · 28 − 2 = 82."],
+   ["Buscar el patrón","Términos: 2, 4, 10, 28, 82. Si restamos 1 a cada uno: 1, 3, 9, 27, 81, que son potencias de 3."],
+   ["Fórmula cerrada","a<sub>n</sub> = 3<sup>n−1</sup> + 1."],
+   ["Verificar","n = 1: 3⁰ + 1 = 2.  n = 5: 3⁴ + 1 = 82. Además, si a<sub>k</sub> = 3<sup>k−1</sup> + 1, entonces a<sub>k+1</sub> = 3(3<sup>k−1</sup> + 1) − 2 = 3<sup>k</sup> + 1, como pide la inducción."]
+  ]}],
+ concl:"Reconocer el patrón de una sucesión permite pasar de una regla paso a paso a una fórmula directa. Se usa para modelar crecimiento, intereses, poblaciones y para analizar el tiempo de ejecución de algoritmos.",
+ demo:{tipo:"sucesion", titulo:"Construye tu propia sucesión"}
+},
+{
+ short:"Binario", titulo:"Conversión decimal a binario", sub:"Procedimiento recursivo",
+ def:"Convertir un número decimal a <strong>binario</strong> es expresarlo con potencias de 2, usando solo los dígitos 0 y 1. El procedimiento recursivo divide entre 2: el residuo es el último dígito y el cociente se convierte con el mismo procedimiento.",
+ car:["Caso base: si n es 0 o 1, su binario es el propio n.","Caso recursivo: bin(n) = bin(⌊n/2⌋) seguido del dígito (n mod 2).","Cada llamada reduce el número a la mitad, así que hay unas log₂ n llamadas.","Los residuos se obtienen de abajo hacia arriba al regresar de las llamadas.","Se comprueba sumando potencias de 2."],
+ formula:"bin(0) = 0,   bin(1) = 1\nbin(n) = bin(⌊n / 2⌋) · (n mod 2),   n ≥ 2",
+ nota:"El punto · indica concatenar: primero se escribe bin(⌊n/2⌋) y al final el residuo.",
+ ejemplos:[{enunciado:"Convertir 13 a binario con el procedimiento recursivo.",
+  pasos:[
+   ["Dividir 13","13 ÷ 2 = 6, residuo 1. Entonces bin(13) = bin(6) seguido de 1."],
+   ["Dividir 6","6 ÷ 2 = 3, residuo 0. Entonces bin(6) = bin(3) seguido de 0."],
+   ["Dividir 3","3 ÷ 2 = 1, residuo 1. Entonces bin(3) = bin(1) seguido de 1."],
+   ["Caso base","bin(1) = 1."],
+   ["Regresar armando","bin(3) = 1 seguido de 1 = 11.  bin(6) = 11 seguido de 0 = 110.  bin(13) = 110 seguido de 1 = 1101."],
+   ["Verificar","1·8 + 1·4 + 0·2 + 1·1 = 13. Coincide."]
+  ]}],
+ concl:"Esta conversión es la base de cómo las computadoras guardan los números. El procedimiento recursivo muestra cómo un problema se reduce a la mitad en cada paso, idea que se repite en algoritmos eficientes como la búsqueda binaria.",
+ demo:{tipo:"binario", titulo:"Convierte cualquier número"}
+},
+{
+ short:"Hanói", titulo:"Torres de Hanói", sub:"Aplicación de la recursividad",
+ def:"Las <strong>Torres de Hanói</strong> son un juego con tres postes y n discos de distinto tamaño, apilados de mayor a menor en el primer poste. El objetivo es pasarlos a otro poste moviendo un disco a la vez y sin poner nunca un disco grande sobre uno pequeño.",
+ car:["Reglas: un disco por movimiento, solo se mueve el disco de arriba y nunca uno grande sobre uno pequeño.","Caso base: con 1 disco, se mueve directo al destino.","Caso recursivo: mover n − 1 discos al poste auxiliar, mover el disco mayor al destino y mover los n − 1 discos sobre él.","El número mínimo de movimientos es 2<sup>n</sup> − 1.","Cada disco extra duplica el trabajo y suma un movimiento."],
+ formula:"T(1) = 1\nT(n) = 2 · T(n − 1) + 1   ⇒   T(n) = 2<sup>n</sup> − 1",
+ nota:"Dos veces el problema de n − 1 discos, más 1 movimiento del disco mayor.",
+ ejemplos:[{enunciado:"Resolver con n = 3 discos de A a C, usando B como poste auxiliar.",
+  pasos:[
+   ["Plan recursivo","Para mover 3 discos de A a C: mover 2 discos de A a B, mover el disco 3 de A a C y mover 2 discos de B a C."],
+   ["Mover 2 discos de A a B","Disco 1: A → C.  Disco 2: A → B.  Disco 1: C → B.  (3 movimientos)"],
+   ["Mover el disco mayor","Disco 3: A → C.  (1 movimiento)"],
+   ["Mover 2 discos de B a C","Disco 1: B → A.  Disco 2: B → C.  Disco 1: A → C.  (3 movimientos)"],
+   ["Contar","3 + 1 + 3 = 7 movimientos."],
+   ["Verificar con la fórmula","T(3) = 2 · T(2) + 1 = 2 · 3 + 1 = 7 = 2³ − 1."]
+  ]}],
+ concl:"Hanói muestra cómo un problema aparentemente complejo se resuelve con una regla recursiva de pocas líneas. También ilustra el crecimiento exponencial: con 64 discos harían falta 2<sup>64</sup> − 1 movimientos, unos 1.8 × 10<sup>19</sup>.",
+ demo:{tipo:"hanoi", titulo:"Mueve los discos"}
+},
+{
+ short:"Relación", titulo:"Inducción y recursividad", sub:"Diferencias y relación",
+ def:"La <strong>recursividad</strong> define o calcula objetos (funciones, sucesiones, algoritmos) a partir de casos más pequeños. La <strong>inducción</strong> demuestra que una propiedad es cierta para todos los casos. Se complementan: lo que se define recursivamente se demuestra por inducción.",
+ car:["Ambas usan una pieza inicial (caso base) y un paso que relaciona n con n − 1, o k con k + 1.","Recursividad: sirve para definir y calcular; reduce un problema a uno menor.","Inducción: sirve para demostrar; parte del caso base y avanza hacia valores mayores.","La recursividad desciende hasta la base; la inducción asciende desde la base.","Probar que un algoritmo recursivo es correcto se hace casi siempre por inducción."],
+ formula:"Recursividad:  f(n) = g( f(n − 1) ),  con f(n₀) dado\nInducción:     P(n₀) ∧ ( P(k) → P(k+1) )  ⇒  ∀n ≥ n₀, P(n)",
+ nota:"La misma estructura (base + paso) aparece en las dos, pero una construye valores y la otra demuestra propiedades.",
+ ejemplos:[{enunciado:"Definir S(n) recursivamente y demostrar por inducción que S(n) = n².",
+  pasos:[
+   ["Definición recursiva","S(1) = 1  y  S(n) = S(n − 1) + (2n − 1), para n ≥ 2."],
+   ["Calcular términos","S(2) = 1 + 3 = 4.  S(3) = 4 + 5 = 9.  S(4) = 9 + 7 = 16."],
+   ["Conjetura","Los valores 1, 4, 9, 16 sugieren que S(n) = n²."],
+   ["Caso base","S(1) = 1 = 1²."],
+   ["Hipótesis inductiva","Suponemos que S(k) = k²."],
+   ["Paso inductivo","S(k + 1) = S(k) + (2(k + 1) − 1) = k² + 2k + 1 = (k + 1)²."],
+   ["Conclusión","S(n) = n² para todo n ≥ 1. La definición usó recursividad y la prueba usó inducción."]
+  ]}],
+ concl:"Entender su relación permite escribir algoritmos recursivos y garantizar que funcionan: la recursividad los construye y la inducción asegura que son correctos. Juntas son la base de la programación y del análisis de algoritmos.",
+ demo:{tipo:"relacion", titulo:"Compáralas y comprueba el resultado"}
+}
+];
+
+/* ---------- Demos ---------- */
+function demoDomino(el, toggles){
+  el.innerHTML =
+   '<div class="ctl"><label for="dn">Número de fichas: <output id="dnv">8</output></label><input id="dn" type="range" min="5" max="12" value="8"></div>' +
+   (toggles ? '<div class="checks"><label class="chk"><input type="checkbox" id="dbase" checked> Caso base: la ficha 1 cae</label><label class="chk"><input type="checkbox" id="dpaso" checked> Paso inductivo: cada ficha tumba a la siguiente</label></div>' : '') +
+   '<div class="dominos" id="dom" aria-hidden="true"></div>' +
+   '<p class="status" id="dst" aria-live="polite"></p>' +
+   '<div class="row"><button class="btn" id="dgo" type="button">Derribar la primera ficha</button><button class="btn ghost" id="drs" type="button">Reiniciar</button></div>';
+  var dn=$("#dn",el), dom=$("#dom",el), dst=$("#dst",el), ts=[];
+  function stop(){ ts.forEach(clearTimeout); ts=[]; }
+  function build(){
+    stop();
+    var n=+dn.value; $("#dnv",el).textContent=n;
+    var h=""; for(var i=1;i<=n;i++) h+='<div class="fi"><span>'+i+'</span></div>';
+    dom.innerHTML=h;
+    dst.textContent = toggles ? "Activa o desactiva las dos condiciones y derriba la primera ficha." : "Si la ficha 1 cae (caso base) y cada ficha tumba a la siguiente (paso inductivo), caen todas.";
+  }
+  $("#dgo",el).onclick=function(){
+    build();
+    var n=+dn.value;
+    var base = toggles ? $("#dbase",el).checked : true;
+    var paso = toggles ? $("#dpaso",el).checked : true;
+    if(!base){ dst.textContent="Sin caso base la ficha 1 no cae. Aunque cada ficha tumbaría a la siguiente, la cadena nunca empieza."; return; }
+    var fis=[].slice.call(dom.children), last = paso ? n-1 : 3;
+    for(var i=0;i<=last;i++){ (function(i){ ts.push(later(function(){ fis[i].classList.add("down"); }, i*280)); })(i); }
+    ts.push(later(function(){
+      dst.textContent = paso ? "Cayeron las "+n+" fichas. Caso base + paso inductivo implican P(n) para todo n." : "El paso inductivo falla en la ficha 4: cae, pero no tumba a la 5. Con el caso base solo no basta.";
+    }, (last+1)*280+100));
+  };
+  $("#drs",el).onclick=build; dn.oninput=build;
+  if(toggles){ $("#dbase",el).onchange=build; $("#dpaso",el).onchange=build; }
+  build();
+}
+
+function demoEjercicios(el){
+  var defs=[
+   {nom:"Suma", h:["1 + 2 + … + n","n(n+1)/2","¿Igual?"], f:function(n){var s=0,i;for(i=1;i<=n;i++)s+=i;var r=n*(n+1)/2;return [s,r,s===r];}},
+   {nom:"Divisibilidad", h:["4ⁿ − 1","(4ⁿ − 1) ÷ 3","¿Múltiplo de 3?"], f:function(n){var v=Math.pow(4,n)-1;return [v,v/3,v%3===0];}},
+   {nom:"Desigualdad", h:["2ⁿ","n","¿2ⁿ > n?"], f:function(n){var v=Math.pow(2,n);return [v,n,v>n];}}
+  ];
+  el.innerHTML='<div class="seg" role="group" aria-label="Ejercicio" id="esel"></div>'+
+   '<div class="ctl"><label for="en">Resalta n = <output id="env">5</output></label><input id="en" type="range" min="1" max="10" value="5"></div>'+
+   '<div class="tablewrap"><table><thead id="eh"></thead><tbody id="eb"></tbody></table></div>';
+  var cur=0;
+  function draw(){
+    var n=+$("#en",el).value; $("#env",el).textContent=n;
+    $("#esel",el).innerHTML=defs.map(function(d,i){return '<button type="button" data-e="'+i+'" aria-pressed="'+(i===cur)+'">'+d.nom+'</button>';}).join("");
+    var d=defs[cur];
+    $("#eh",el).innerHTML='<tr><th>n</th><th>'+d.h[0]+'</th><th>'+d.h[1]+'</th><th>'+d.h[2]+'</th></tr>';
+    var rows="";
+    for(var i=1;i<=10;i++){ var r=d.f(i); rows+='<tr'+(i===n?' class="hl"':'')+'><td class="num">'+i+'</td><td class="num">'+big(r[0])+'</td><td class="num">'+big(r[1])+'</td><td>'+(r[2]?'<span class="okmark">✓ sí</span>':'<span class="badmark">✗ no</span>')+'</td></tr>'; }
+    $("#eb",el).innerHTML=rows;
+    [].forEach.call($("#esel",el).querySelectorAll("button"),function(b){ b.onclick=function(){cur=+b.getAttribute("data-e");draw();}; });
+  }
+  $("#en",el).oninput=draw; draw();
+}
+
+var PILA = {
+  suma:{min:1,max:8,def:4,label:function(k){return "S("+k+")";},
+    open:function(k){return k===1?"caso base → devuelve 1":"S("+(k-1)+") + "+k+"   (espera S("+(k-1)+"))";},
+    val:function(k){return k*(k+1)/2;}, nombre:"S(n) = 1 + 2 + … + n"},
+  fact:{min:0,max:8,def:5,label:function(k){return k+"!";},
+    open:function(k){return k===0?"caso base → devuelve 1":k+" · "+(k-1)+"!   (espera "+(k-1)+"!)";},
+    val:function(k){var r=1;for(var i=2;i<=k;i++)r*=i;return r;}, nombre:"n!"}
+};
+function demoPila(el, key){
+  var c=PILA[key], s=0;
+  el.innerHTML=
+   '<div class="ctl"><label for="pn">Valor de n: <output id="pnv"></output></label><input id="pn" type="range" min="'+c.min+'" max="'+c.max+'" value="'+c.def+'"></div>'+
+   '<div class="row"><button class="btn ghost" id="pp" type="button">Anterior</button><button class="btn" id="pnx" type="button">Siguiente</button><button class="btn ghost" id="prs" type="button">Reiniciar</button><span class="mono" id="pcnt"></span></div>'+
+   '<p class="status" id="pst" aria-live="polite"></p><div class="stack" id="pstk"></div>';
+  var pn=$("#pn",el);
+  function draw(){
+    var n=+pn.value, m=n-c.min, total=2*m;
+    $("#pnv",el).textContent=n;
+    s=Math.max(0,Math.min(total,s));
+    var h="", top=Math.min(s,m);
+    for(var i=top;i>=0;i--){
+      var k=n-i, done = s>=total-i;
+      h+='<div class="frame'+(done?' done':'')+'"><b>'+c.label(k)+'</b><span>'+(done?'devuelve '+big(c.val(k)):c.open(k))+'</span></div>';
+    }
+    $("#pstk",el).innerHTML=h;
+    var msg;
+    if(s===total) msg="Resultado final: "+c.label(n)+" = "+big(c.val(n))+".";
+    else if(s===m) msg="Se llegó al caso base: devuelve su valor sin llamar a nadie. Ahora se regresa.";
+    else if(s<m) msg="Descenso: cada llamada genera otra más pequeña ("+(s+1)+" abiertas, la última queda arriba).";
+    else msg="Regreso: cada llamada recibe el valor de la de arriba y calcula el suyo.";
+    $("#pst",el).textContent=msg;
+    $("#pcnt",el).textContent="Paso "+(s+1)+" de "+(total+1);
+    $("#pp",el).disabled=s===0; $("#pnx",el).disabled=s===total;
+  }
+  $("#pp",el).onclick=function(){s--;draw();};
+  $("#pnx",el).onclick=function(){s++;draw();};
+  $("#prs",el).onclick=function(){s=0;draw();};
+  pn.oninput=function(){s=0;draw();};
+  draw();
+}
+
+function demoFib(el){
+  el.innerHTML=
+   '<div class="ctl"><label for="fn">n = <output id="fnv"></output></label><input id="fn" type="range" min="0" max="20" value="10"></div>'+
+   '<div class="chips" id="fch"></div>'+
+   '<div class="stats"><div class="stat"><span>F(n)</span><b id="f1"></b></div><div class="stat"><span>F(n) ÷ F(n − 1)</span><b id="f2"></b></div><div class="stat"><span>Llamadas de la recursión directa</span><b id="f3"></b></div></div>'+
+   '<p class="nota">La razón áurea es φ = 1.618034… Las llamadas se cuentan con C(n) = C(n − 1) + C(n − 2) + 1, con C(0) = C(1) = 1.</p>';
+  function draw(){
+    var n=+$("#fn",el).value; $("#fnv",el).textContent=n;
+    var F=[0,1],C=[1,1],i;
+    for(i=2;i<=n;i++){F[i]=F[i-1]+F[i-2];C[i]=C[i-1]+C[i-2]+1;}
+    var h="";
+    for(i=0;i<=n;i++) h+='<span class="chip'+(i===n?' hl':'')+'" title="F('+i+')">'+F[i]+'</span>';
+    $("#fch",el).innerHTML=h;
+    $("#f1",el).textContent=big(F[n]);
+    $("#f2",el).textContent= n>=2 ? (F[n]/F[n-1]).toFixed(6) : "—";
+    $("#f3",el).textContent=big(C[n]);
+  }
+  $("#fn",el).oninput=draw; draw();
+}
+
+function demoSucesion(el){
+  el.innerHTML=
+   '<div class="demo-fields">'+
+   '<div><label for="sa">Término inicial a₁</label><input id="sa" type="number" min="-20" max="20" step="1" value="2"></div>'+
+   '<div><label for="sp">Multiplicador p</label><input id="sp" type="number" min="-5" max="5" step="1" value="3"></div>'+
+   '<div><label for="sq">Constante q</label><input id="sq" type="number" min="-20" max="20" step="1" value="-2"></div></div>'+
+   '<div class="ctl"><label for="sn">Términos: <output id="snv"></output></label><input id="sn" type="range" min="3" max="12" value="6"></div>'+
+   '<p class="enun" id="srule"></p><div class="chips" id="sch"></div><p id="sinfo"></p><p class="nota" id="sver"></p>';
+  function draw(){
+    var a1=clamp($("#sa",el).value,-20,20), p=clamp($("#sp",el).value,-5,5), q=clamp($("#sq",el).value,-20,20), N=+$("#sn",el).value;
+    $("#snv",el).textContent=N;
+    $("#srule",el).innerHTML='a₁ = '+fmt(a1)+',   a<sub>n</sub> = '+fmt(p)+' · a<sub>n−1</sub> '+(q<0?'− '+fmt(-q):'+ '+fmt(q));
+    var a=[a1],i;
+    for(i=1;i<N;i++) a[i]=p*a[i-1]+q;
+    $("#sch",el).innerHTML=a.map(function(v,j){return '<span class="chip" title="a'+(j+1)+'">'+big(v)+'</span>';}).join("");
+    var info, closed, L=null;
+    if(p===1){
+      info='Es una sucesión <strong>aritmética</strong> con diferencia d = '+fmt(q)+'.';
+      closed=function(n){return a1+(n-1)*q;};
+      $("#sinfo",el).innerHTML=info+' Fórmula cerrada: a<sub>n</sub> = '+fmt(a1)+' + (n − 1)·'+(q<0?'('+fmt(q)+')':fmt(q))+'.';
+    } else {
+      L=q/(1-p);
+      closed=function(n){return (a1-L)*Math.pow(p,n-1)+L;};
+      info = q===0 ? 'Es una sucesión <strong>geométrica</strong> con razón r = '+fmt(p)+'.' : 'Mezcla una multiplicación con una suma constante.';
+      $("#sinfo",el).innerHTML=info+' Fórmula cerrada: a<sub>n</sub> = '+fmt(a1-L)+' · '+(p<0?'('+fmt(p)+')':fmt(p))+'<sup>n−1</sup> '+(L<0?'− '+fmt(-L):'+ '+fmt(L))+'.';
+    }
+    var ok = Math.abs(closed(N)-a[N-1]) < 1e-6*Math.max(1,Math.abs(a[N-1]));
+    $("#sver",el).innerHTML='Comprobación en n = '+N+': la recursión da '+big(a[N-1])+' y la fórmula cerrada da '+big(Math.round(closed(N)*1e4)/1e4)+' '+(ok?'<span class="okmark">✓ coinciden</span>':'<span class="badmark">✗ no coinciden</span>')+'.';
+  }
+  ["sa","sp","sq","sn"].forEach(function(id){ $("#"+id,el).oninput=draw; });
+  draw();
+}
+
+function demoBinario(el){
+  el.innerHTML=
+   '<div class="ctl"><label for="bn">Número decimal (0 a 9999)</label><input id="bn" type="number" min="0" max="9999" step="1" value="13" inputmode="numeric"></div><div id="bout"></div>';
+  function draw(){
+    var n=Math.floor(clamp($("#bn",el).value,0,9999)), m=n, rows=[];
+    while(m>=2){ rows.push({n:m,q:Math.floor(m/2),r:m%2}); m=Math.floor(m/2); }
+    var res=String(m), i;
+    for(i=rows.length-1;i>=0;i--) res+=rows[i].r;
+    var t='<div class="tablewrap"><table><thead><tr><th>Llamada</th><th>Cociente ⌊n/2⌋</th><th>Residuo n mod 2</th></tr></thead><tbody>';
+    rows.forEach(function(r){ t+='<tr><td class="num">bin('+r.n+')</td><td class="num">'+r.q+'</td><td class="num"><b>'+r.r+'</b></td></tr>'; });
+    t+='<tr class="hl"><td class="num">bin('+m+')</td><td>caso base</td><td class="num"><b>'+m+'</b></td></tr></tbody></table></div>';
+    var chips='<div class="chips" aria-label="Dígitos del resultado">'+res.split("").map(function(d){return '<span class="chip hl">'+d+'</span>';}).join("")+'</div>';
+    var len=res.length, sum=res.split("").map(function(d,j){return d+'·'+Math.pow(2,len-1-j);}).join(" + ");
+    $("#bout",el).innerHTML=t+'<p style="margin-top:12px">Se lee de abajo hacia arriba: primero el caso base y luego los residuos al regresar.</p>'+chips+
+      '<p class="nota">bin('+n+') = <strong>'+res+'</strong>. Verificación: '+sum+' = '+n+' '+(parseInt(res,2)===n?'<span class="okmark">✓</span>':'<span class="badmark">✗</span>')+'</p>';
+  }
+  $("#bn",el).oninput=draw; draw();
+}
+
+function demoHanoi(el){
+  el.innerHTML=
+   '<div class="ctl"><label for="hn">Discos: <output id="hnv">3</output></label><input id="hn" type="range" min="1" max="6" value="3"></div>'+
+   '<div class="pegs" id="pegs"></div><p class="status" id="hst" aria-live="polite"></p>'+
+   '<div class="row"><button class="btn" id="hnx" type="button">Siguiente movimiento</button><button class="btn ghost" id="hpl" type="button">Reproducir</button><button class="btn ghost" id="hrs" type="button">Reiniciar</button></div>';
+  var moves=[], k=0, iv=null, n=3;
+  function gen(d,a,c,b){ if(d===0) return; gen(d-1,a,b,c); moves.push([d,a,c]); gen(d-1,b,c,a); }
+  function stop(){ if(iv){ clearInterval(iv); iv=null; $("#hpl",el).textContent="Reproducir"; } }
+  function draw(){
+    var pegs={A:[],B:[],C:[]}, d, j;
+    for(d=n;d>=1;d--) pegs.A.push(d);
+    for(j=0;j<k;j++){ var mv=moves[j]; pegs[mv[1]].pop(); pegs[mv[2]].push(mv[0]); }
+    var h="";
+    ["A","B","C"].forEach(function(p){
+      h+='<div class="peg">';
+      pegs[p].forEach(function(dd){
+        var w=28+(dd/n)*68;
+        h+='<div class="disc" style="width:'+w+'%;background:color-mix(in srgb,var(--accent) '+(25+dd/n*60)+'%,var(--surface))">'+dd+'</div>';
+      });
+      h+='<span class="plabel">Poste '+p+'</span></div>';
+    });
+    $("#pegs",el).innerHTML=h;
+    var st;
+    if(k===0) st="Mínimo para "+n+" disco"+(n>1?"s":"")+": 2^"+n+" − 1 = "+moves.length+" movimientos. Todos los discos están en el poste A.";
+    else { var m=moves[k-1]; st="Movimiento "+k+" de "+moves.length+": disco "+m[0]+" del poste "+m[1]+" al poste "+m[2]+"."+(k===moves.length?" Listo: todos los discos están en el poste C.":""); }
+    $("#hst",el).textContent=st;
+    $("#hnx",el).disabled = k>=moves.length;
+  }
+  function build(){ stop(); n=+$("#hn",el).value; $("#hnv",el).textContent=n; moves=[]; gen(n,"A","C","B"); k=0; draw(); }
+  $("#hn",el).oninput=build;
+  $("#hnx",el).onclick=function(){ if(k<moves.length){k++;draw();} };
+  $("#hrs",el).onclick=build;
+  $("#hpl",el).onclick=function(){
+    if(iv){ stop(); return; }
+    if(k>=moves.length){ k=0; draw(); }
+    $("#hpl",el).textContent="Pausar";
+    iv=setInterval(function(){ if(k<moves.length){k++;draw();} if(k>=moves.length) stop(); }, 650);
+    timers.push(iv);
+  };
+  build();
+}
+
+function demoRelacion(el){
+  el.innerHTML=
+   '<div class="tablewrap"><table class="cmp"><thead><tr><th scope="col"></th><th scope="col">Recursividad</th><th scope="col">Inducción</th></tr></thead><tbody>'+
+   '<tr><th scope="row">Propósito</th><td>Definir y calcular</td><td>Demostrar</td></tr>'+
+   '<tr><th scope="row">Dirección</th><td>Hacia abajo: n → n − 1 → … → base</td><td>Hacia arriba: base → k → k + 1</td></tr>'+
+   '<tr><th scope="row">Pieza inicial</th><td>Caso base</td><td>Caso base</td></tr>'+
+   '<tr><th scope="row">Pieza repetida</th><td>Caso recursivo</td><td>Paso inductivo</td></tr>'+
+   '<tr><th scope="row">Resultado</th><td>Un valor o una estructura</td><td>Una proposición verdadera para todo n</td></tr></tbody></table></div>'+
+   '<h4 style="margin:20px 0 4px">Comprueba que S(n) = n²</h4>'+
+   '<div class="ctl"><label for="rn">n = <output id="rnv"></output></label><input id="rn" type="range" min="1" max="12" value="6"></div>'+
+   '<div class="tablewrap"><table><thead><tr><th>n</th><th>S(n) recursivo</th><th>n²</th><th>¿Igual?</th></tr></thead><tbody id="rb"></tbody></table></div>';
+  function draw(){
+    var N=+$("#rn",el).value; $("#rnv",el).textContent=N;
+    var s=0,h="";
+    for(var i=1;i<=N;i++){ s = i===1 ? 1 : s+(2*i-1); h+='<tr'+(i===N?' class="hl"':'')+'><td class="num">'+i+'</td><td class="num">'+s+'</td><td class="num">'+i*i+'</td><td>'+(s===i*i?'<span class="okmark">✓</span>':'<span class="badmark">✗</span>')+'</td></tr>'; }
+    $("#rb",el).innerHTML=h;
+  }
+  $("#rn",el).oninput=draw; draw();
+}
+
+/* ---------- Render ---------- */
+var cur = 0, tabsEl = $("#tabs"), main = $("#tema");
+
+function ejemploHTML(ej){
+  var h='<p class="enun">'+ej.enunciado+'</p><ol class="steps">';
+  ej.pasos.forEach(function(p,j){ h+='<li class="step"><span class="bullet">'+(j+1)+'</span><div><strong>'+p[0]+'</strong><p>'+p[1]+'</p></div></li>'; });
+  h+='</ol><div class="row"><button class="btn ghost sp" type="button">Paso anterior</button><button class="btn sn" type="button">Paso siguiente</button><span class="scnt mono"></span></div>';
+  return h;
+}
+function initSteps(root){
+  var items=[].slice.call(root.querySelectorAll(".step")), a=0;
+  var prev=$(".sp",root), next=$(".sn",root), cnt=$(".scnt",root);
+  function set(k){
+    a=Math.max(0,Math.min(items.length-1,k));
+    items.forEach(function(li,j){ li.classList.toggle("active",j===a); li.classList.toggle("past",j<a); });
+    cnt.textContent="Paso "+(a+1)+" de "+items.length;
+    prev.disabled=a===0; next.disabled=a===items.length-1;
+  }
+  items.forEach(function(li,j){ li.addEventListener("click",function(){ set(j); }); });
+  prev.onclick=function(){ set(a-1); }; next.onclick=function(){ set(a+1); };
+  set(0);
+}
+
+function render(i){
+  clearTimers();
+  var t=TOPICS[i];
+  var sel = t.ejemplos.length>1 ? '<div class="seg" role="group" aria-label="Ejercicio" id="ejsel">'+t.ejemplos.map(function(e,j){return '<button type="button" data-j="'+j+'" aria-pressed="'+(j===0)+'">Ejercicio '+(j+1)+': '+e.nom+'</button>';}).join("")+'</div>' : "";
+  main.innerHTML =
+   '<article>'+
+   '<div class="tema-head"><span class="idx">TEMA '+(i+1)+' DE 10</span><h2>'+t.titulo+'</h2><p class="sub">'+t.sub+'</p></div>'+
+   '<div class="grid3">'+
+    '<section class="panel def"><h3>Definición</h3><p>'+t.def+'</p></section>'+
+    '<section class="panel"><h3>Características principales</h3><ul class="car">'+t.car.map(function(c){return '<li>'+c+'</li>';}).join("")+'</ul></section>'+
+    '<section class="panel formula"><h3>Fórmula o regla</h3><div class="formula-box">'+t.formula+'</div><p class="nota">'+t.nota+'</p></section>'+
+   '</div>'+
+   '<section class="panel" id="ejemplo"><h3>Ejemplo desarrollado paso a paso</h3>'+sel+'<div id="ejbody"></div></section>'+
+   '<section class="panel" id="demo"><h3>'+t.demo.titulo+'</h3><div id="demobody"></div></section>'+
+   '<section class="panel concl"><h3>Conclusión: ¿para qué sirve?</h3><p>'+t.concl+'</p></section>'+
+   '<div class="row" style="justify-content:space-between">'+
+    '<button class="btn ghost" id="bprev" type="button"'+(i===0?' disabled':'')+'>← '+(i>0?TOPICS[i-1].short:'')+'</button>'+
+    '<button class="btn" id="bnext" type="button"'+(i===9?' disabled':'')+'>'+(i<9?TOPICS[i+1].short:'')+' →</button>'+
+   '</div></article>';
+
+  var ejbody=$("#ejbody",main);
+  function showEj(j){ ejbody.innerHTML=ejemploHTML(t.ejemplos[j]); initSteps(ejbody); }
+  showEj(0);
+  if(t.ejemplos.length>1){
+    var btns=[].slice.call($("#ejsel",main).querySelectorAll("button"));
+    btns.forEach(function(b){ b.onclick=function(){ var j=+b.getAttribute("data-j"); btns.forEach(function(x){x.setAttribute("aria-pressed",String(x===b));}); showEj(j); }; });
+  }
+
+  var d=t.demo, host=$("#demobody",main);
+  if(d.tipo==="domino") demoDomino(host,d.toggles);
+  else if(d.tipo==="ejercicios") demoEjercicios(host);
+  else if(d.tipo==="pila") demoPila(host,d.cfg);
+  else if(d.tipo==="fib") demoFib(host);
+  else if(d.tipo==="sucesion") demoSucesion(host);
+  else if(d.tipo==="binario") demoBinario(host);
+  else if(d.tipo==="hanoi") demoHanoi(host);
+  else if(d.tipo==="relacion") demoRelacion(host);
+
+  $("#bprev",main).onclick=function(){ go(cur-1,true); };
+  $("#bnext",main).onclick=function(){ go(cur+1,true); };
+}
+
+function drawTabs(){
+  tabsEl.innerHTML=TOPICS.map(function(t,i){
+    return '<button class="tab" type="button" data-i="'+i+'"'+(i===cur?' aria-current="true"':'')+'><span class="n">'+(i+1)+'</span><span>'+t.short+'</span></button>';
+  }).join("");
+  [].forEach.call(tabsEl.querySelectorAll(".tab"),function(b){ b.onclick=function(){ go(+b.getAttribute("data-i"),false); }; });
+}
+
+function go(i,scroll){
+  i=Math.max(0,Math.min(TOPICS.length-1,i));
+  cur=i; drawTabs(); render(i);
+  var h="tema-"+(i+1);
+  if(location.hash!=="#"+h){ try{ location.hash=h; }catch(e){} }
+  if(scroll){
+    var rm=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    tabsEl.scrollIntoView({behavior:rm?"auto":"smooth",block:"start"});
+  }
+}
+
+function fromHash(){
+  var m=/^#tema-(\d+)$/.exec(location.hash||"");
+  var i=m?Math.min(10,Math.max(1,+m[1]))-1:0;
+  return i;
+}
+window.addEventListener("hashchange",function(){ var i=fromHash(); if(i!==cur) go(i,false); });
+document.addEventListener("keydown",function(e){
+  var tg=e.target&&e.target.tagName;
+  if(tg==="INPUT"||tg==="TEXTAREA"||tg==="SELECT") return;
+  if(e.key==="ArrowRight") go(cur+1,true);
+  else if(e.key==="ArrowLeft") go(cur-1,true);
+});
+
+go(fromHash(),false);
+})();
+</script>
+
+</body></html>
